@@ -1,0 +1,22 @@
+# Servo Control System Dependencies
+# Install with: pip3 install -r requirements.txt
+
+# I2C communication and PWM control
+adafruit-circuitpython-pca9685>=3.4.0
+adafruit-circuitpython-busdevice>=5.2.0
+
+# HTTP API server
+flask>=2.3.0
+
+# Scheduling and time management
+schedule>=1.2.0
+
+# Configuration management
+pyyaml>=6.0
+
+# Logging and debugging
+colorlog>=6.7.0
+
+# Network utilities
+cachetools>=5.0.0
+

@@ -1,0 +1,99 @@
+# Servo Control System Configuration
+# This file contains all configurable parameters for the system
+
+# Hardware Configuration
+hardware:
+  # I2C bus configuration
+  i2c:
+    bus: 1  # Default I2C bus on Raspberry Pi
+    address: 0x40  # Default PCA9685 I2C address
+  
+  # PCA9685 PWM configuration
+  pca9685:
+    frequency: 50  # 50Hz for standard servos
+    reference_clock: 25000000  # 25MHz internal clock
+  
+  # Servo configuration
+  servos:
+    # Servo pulse width range in microseconds (min, max)
+    pulse_range: [500, 2500]  # Standard SG90 range
+    # Default angle range
+    angle_range: [0, 180]  # Degrees
+    # Safety limits
+    max_angle_change_per_second: 90  # Degrees per second for safety
+    power_off_delay: 2.0  # Seconds to wait before powering off PWM
+
+# Movement Sequences
+sequences:
+  # Example sequence - customize these for your needs
+  wave:
+    - channel: 0
+      angle: 90
+      duration: 1.0
+    - channel: 1
+      angle: 45
+      duration: 1.0
+    - channel: 0
+      angle: 0
+      duration: 1.0
+    - channel: 1
+      angle: 90
+      duration: 1.0
+  
+  reset_all:
+    - channel: 0
+      angle: 90
+      duration: 0.5
+    - channel: 1
+      angle: 90
+      duration: 0.5
+    - channel: 2
+      angle: 90
+      duration: 0.5
+    - channel: 3
+      angle: 90
+      duration: 0.5
+    - channel: 4
+      angle: 90
+      duration: 0.5
+    - channel: 5
+      angle: 90
+      duration: 0.5
+
+# HTTP API Configuration
+api:
+  host: "0.0.0.0"  # Listen on all interfaces
+  port: 5000
+  debug: false
+  
+# Logging Configuration
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  file: "servo_control.log"
+  max_size_mb: 10
+  backup_count: 5
+
+# Safety Configuration
+safety:
+  enable_limits: true
+  max_concurrent_movements: 3
+  emergency_stop_enabled: true
+  power_management: true
+
+# Security Configuration
+security:
+  authentication:
+    enabled: true
+    type: "api_key"
+    # API keys are loaded from environment variables
+    # DO NOT put actual keys here!
+    # Set SERVO_API_KEY environment variable on your Raspberry Pi
+  
+  access_control:
+    ip_whitelist:
+      - "192.168.1.100"  # Your device - change this to your actual IP
+      - "192.168.1.101"  # Another trusted device - change as needed
+    
+    rate_limiting:
+      enabled: true
+      max_requests_per_minute: 60
