@@ -16,7 +16,7 @@ hardware:
   # Servo configuration
   servos:
     # Servo pulse width range in microseconds (min, max)
-    pulse_range: [500, 2500]  # Standard SG90 range
+    pulse_range: [450, 2650]  # Extended range for high-quality servos
     # Default angle range
     angle_range: [0, 180]  # Degrees
     # Safety limits
