@@ -8,8 +8,8 @@
 ## 🔧 **Changes Made**
 
 ### 1. Updated `config.yaml`
-- Changed `pulse_range` from `[500, 2500]` to `[450, 2650]`
-- Updated comment to reflect extended range for high-quality servos
+- Changed `pulse_range` from `[500, 2500]` to `[544, 2600]`
+- Updated comment to reflect calibrated range for extended range servo
 
 ### 2. Updated `config.local.yaml`
 - Updated example pulse range in local configuration template
@@ -22,11 +22,11 @@
 - Limited servo compatibility
 - Risk of infinite spinning with extended range servos
 
-**After (Extended Range):**
-- Pulse range: 450-2650 microseconds
-- Compatible with high-quality servos
+**After (Calibrated Extended Range):**
+- Pulse range: 544-2600 microseconds
+- Calibrated for extended range servo
 - Prevents infinite spinning and hardware damage
-- Maintains 0-180° angle range
+- Maintains 0-180° angle range with smooth movement
 
 ## 🧪 **Testing Required**
 
@@ -51,10 +51,11 @@
 ```
 fix: Update servo pulse range to support extended range servos
 
-- Change default pulse_range from [500, 2500] to [450, 2650]
-- Fixes infinite spinning issue with high-quality servos
+- Change default pulse_range from [500, 2500] to [544, 2600]
+- Fixes infinite spinning issue with extended range servos
 - Maintains backward compatibility via config.local.yaml
 - Prevents hardware damage from out-of-range commands
+- Provides smooth movement without additional unwanted motions
 
 Closes: [Issue number if applicable]
 ```
