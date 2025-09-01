@@ -102,10 +102,10 @@ class ServoHardware:
                 )
                 
                 self.servos[channel] = servo_obj
-                self.current_positions[channel] = 90  # Default to center position
+                self.current_positions[channel] = 0  # Default to 0 degrees
                 
-                # Set initial position to center
-                servo_obj.angle = 90
+                # Set initial position to 0 degrees
+                servo_obj.angle = 0
                 
             self.logger.info(f"Initialized {len(self.servos)} servo channels")
             
@@ -140,7 +140,7 @@ class ServoHardware:
         
         try:
             # Get current position
-            current_angle = self.current_positions.get(channel, 90)
+            current_angle = self.current_positions.get(channel, 0)
             
             # Calculate movement parameters
             angle_diff = abs(angle - current_angle)
