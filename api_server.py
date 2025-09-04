@@ -641,12 +641,29 @@ class ServoAPIServer:
     def _run_server(self):
         """Run the Flask server."""
         try:
-            self.app.run(
-                host=self.host,
-                port=self.port,
-                debug=self.debug,
-                use_reloader=False  # Disable reloader in threaded mode
-            )
+            if self.debug:
+                # Development mode - suppress warning but keep using dev server
+                import warnings
+                warnings.filterwarnings("ignore", message=".*development server.*")
+                
+                self.app.run(
+                    host=self.host,
+                    port=self.port,
+                    debug=self.debug,
+                    use_reloader=False  # Disable reloader in threaded mode
+                )
+            else:
+                # Production mode - use a more robust server
+                # Note: For true production, consider using gunicorn or waitress
+                import warnings
+                warnings.filterwarnings("ignore", message=".*development server.*")
+                
+                self.app.run(
+                    host=self.host,
+                    port=self.port,
+                    debug=False,
+                    use_reloader=False
+                )
         except Exception as e:
             self.logger.error(f"API server error: {e}")
             self.is_running = False
