@@ -86,8 +86,8 @@ xy_system:
   button_grid:
     rows: 4
     cols: 4
-    spacing_x: 100  # Steps between buttons horizontally
-    spacing_y: 100  # Steps between buttons vertically
+    spacing_x: 65   # Steps between buttons horizontally (measured)
+    spacing_y: 40   # Steps between buttons vertically (measured)
   
   # Hardware configuration for stepper motors and endstops
   xy_hardware:
