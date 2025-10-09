@@ -214,10 +214,7 @@ class XYStepperHardware:
                 
                 self.logger.info(f"Moving to ({x}, {y}) - relative movement: ({dx}, {dy})")
                 
-                # Check for endstops before moving
-                if self._check_endstops():
-                    self.logger.error("Endstop triggered - movement aborted")
-                    return False
+                # Note: Endstops are checked during movement, not before
                 
                 # Move both axes
                 success = True
