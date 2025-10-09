@@ -104,8 +104,8 @@ xy_system:
     # Note: These are for POSITIVE movement (away from home)
     # Homing uses opposite direction to reach endstops
     directions:
-      x_clockwise: False  # Positive X steps go counter-clockwise (away from home)
-      y_clockwise: True   # Positive Y steps go clockwise (away from home)
+      x_clockwise: True   # Positive X steps go clockwise (away from home)
+      y_clockwise: False  # Positive Y steps go counter-clockwise (away from home)
     
     # Timing configuration
     step_delay: 0.001  # Delay between steps in seconds
