@@ -590,6 +590,74 @@ class ServoAPIServer:
                     'error': str(e)
                 }), 500
         
+        @self.app.route('/api/servo/<int:channel>/press', methods=['POST'])
+        @self.require_api_key
+        def press_servo(channel):
+            """Press and release a servo for button pressing."""
+            try:
+                data = request.get_json() or {}
+                press_angle = data.get('press_angle')
+                release_angle = data.get('release_angle')
+                press_delay = data.get('press_delay', 0.1)
+                
+                if press_angle is None or release_angle is None:
+                    return jsonify({
+                        'success': False,
+                        'error': 'press_angle and release_angle parameters are required'
+                    }), 400
+                
+                # Validate parameters
+                if not (0 <= channel <= 15):
+                    return jsonify({
+                        'success': False,
+                        'error': 'Channel must be between 0 and 15'
+                    }), 400
+                
+                if not (0 <= press_angle <= 180):
+                    return jsonify({
+                        'success': False,
+                        'error': 'press_angle must be between 0 and 180 degrees'
+                    }), 400
+                
+                if not (0 <= release_angle <= 180):
+                    return jsonify({
+                        'success': False,
+                        'error': 'release_angle must be between 0 and 180 degrees'
+                    }), 400
+                
+                if press_delay < 0:
+                    return jsonify({
+                        'success': False,
+                        'error': 'press_delay must be non-negative'
+                    }), 400
+                
+                # Execute press operation
+                success = self.servo_controller.press_servo(channel, press_angle, release_angle, press_delay)
+                
+                if success:
+                    return jsonify({
+                        'success': True,
+                        'message': f'Servo {channel} press operation completed',
+                        'data': {
+                            'channel': channel,
+                            'press_angle': press_angle,
+                            'release_angle': release_angle,
+                            'press_delay': press_delay
+                        }
+                    })
+                else:
+                    return jsonify({
+                        'success': False,
+                        'error': f'Failed to press servo {channel}'
+                    }), 500
+                    
+            except Exception as e:
+                self.logger.error(f"Press servo request failed: {e}")
+                return jsonify({
+                    'success': False,
+                    'error': str(e)
+                }), 500
+        
         @self.app.route('/api/servo/release-all', methods=['POST'])
         @self.require_api_key
         def release_all_servos():

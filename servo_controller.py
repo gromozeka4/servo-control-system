@@ -154,6 +154,62 @@ class ServoController:
                 if channel in self.active_movements:
                     del self.active_movements[channel]
     
+    def press_servo(self, channel: int, press_angle: float, release_angle: float, press_delay: float = 0.1) -> bool:
+        """
+        Press and release a servo in one operation for button pressing.
+        
+        Args:
+            channel: Servo channel (0-15)
+            press_angle: Angle to press the button (degrees)
+            release_angle: Angle to release the button (degrees)
+            press_delay: Time to hold the press position (seconds)
+            
+        Returns:
+            bool: True if press operation successful, False otherwise
+        """
+        with self.movement_lock:
+            # Check if servo is already moving
+            if channel in self.active_movements:
+                self.logger.warning(f"Servo {channel} is already moving, ignoring press command")
+                return False
+            
+            # Mark servo as moving
+            self.active_movements[channel] = {
+                'start_time': time.time(),
+                'target_angle': press_angle,
+                'duration': 0.0
+            }
+        
+        try:
+            # Move to press position
+            self.logger.info(f"Servo {channel} pressing to {press_angle}°")
+            success = self.hardware.move_servo(channel, press_angle, 0.0)
+            
+            if not success:
+                self.logger.error(f"Failed to move servo {channel} to press position")
+                return False
+            
+            # Hold press position
+            if press_delay > 0:
+                time.sleep(press_delay)
+            
+            # Move to release position
+            self.logger.info(f"Servo {channel} releasing to {release_angle}°")
+            success = self.hardware.move_servo(channel, release_angle, 0.0)
+            
+            if success:
+                self.logger.info(f"Servo {channel} press operation completed")
+            else:
+                self.logger.error(f"Failed to move servo {channel} to release position")
+            
+            return success
+            
+        finally:
+            # Remove from active movements
+            with self.movement_lock:
+                if channel in self.active_movements:
+                    del self.active_movements[channel]
+    
     def run_sequence(self, sequence_name: str, repeat_count: int = 1) -> bool:
         """
         Run a predefined movement sequence.
