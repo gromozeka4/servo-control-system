@@ -82,15 +82,8 @@ safety:
 
 # XY Positioning System Configuration
 xy_system:
-  # Button grid configuration
-  button_grid:
-    rows: 4
-    cols: 4
-    spacing_x: 65   # Steps between buttons horizontally (measured)
-    spacing_y: 40   # Steps between buttons vertically (measured)
-    # Grid origin offset - where the grid starts relative to home (0,0)
-    origin_x: 300   # X coordinate of button 1 (row 0, col 0)
-    origin_y: 450   # Y coordinate of button 1 (row 0, col 0)
+  # Note: Button grid mapping should be handled by automation framework
+  # This system provides only basic XY positioning functionality
   
   # Hardware configuration for stepper motors and endstops
   xy_hardware:

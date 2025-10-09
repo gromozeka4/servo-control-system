@@ -755,53 +755,6 @@ class ServoAPIServer:
                     'error': str(e)
                 }), 500
         
-        @self.app.route('/api/xy/button/<int:row>/<int:col>', methods=['POST'])
-        @self.require_api_key
-        def move_to_button(row, col):
-            """Move to a specific button position in the grid."""
-            try:
-                # Execute movement
-                success = self.xy_controller.move_to_button(row, col)
-                
-                if success:
-                    return jsonify({
-                        'success': True,
-                        'message': f'Moved to button ({row}, {col})',
-                        'data': {
-                            'row': row,
-                            'col': col
-                        }
-                    })
-                else:
-                    return jsonify({
-                        'success': False,
-                        'error': f'Failed to move to button ({row}, {col})'
-                    }), 500
-                    
-            except Exception as e:
-                self.logger.error(f"Move to button request failed: {e}")
-                return jsonify({
-                    'success': False,
-                    'error': str(e)
-                }), 500
-        
-        @self.app.route('/api/xy/buttons', methods=['GET'])
-        @self.require_api_key
-        def get_button_positions():
-            """Get all button positions in the grid."""
-            try:
-                positions = self.xy_controller.get_all_button_positions()
-                return jsonify({
-                    'success': True,
-                    'data': positions,
-                    'timestamp': time.time()
-                })
-            except Exception as e:
-                self.logger.error(f"Get button positions request failed: {e}")
-                return jsonify({
-                    'success': False,
-                    'error': str(e)
-                }), 500
         
         @self.app.route('/api/xy/home', methods=['POST'])
         @self.require_api_key
