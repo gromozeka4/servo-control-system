@@ -121,8 +121,8 @@ class XYStepperHardware:
             
             # Move back from endstops to establish home position
             self.logger.info("Moving back from endstops to establish home position...")
-            self._move_axis_steps('x', -self.homing_steps_back, check_endstops=False)
-            self._move_axis_steps('y', -self.homing_steps_back, check_endstops=False)
+            self._move_back_from_endstop('x', self.homing_steps_back)
+            self._move_back_from_endstop('y', self.homing_steps_back)
             
             # Reset position counters
             self.current_x = 0
@@ -185,6 +185,47 @@ class XYStepperHardware:
             
         except Exception as e:
             self.logger.error(f"Failed to home {axis.upper()} axis: {e}")
+            return False
+    
+    def _move_back_from_endstop(self, axis: str, steps: int) -> bool:
+        """
+        Move back from endstop using the same direction as homing.
+        
+        Args:
+            axis: 'x' or 'y'
+            steps: Number of steps to move back
+            
+        Returns:
+            bool: True if movement successful, False otherwise
+        """
+        step_pin = self.step_x if axis == 'x' else self.step_y
+        dir_pin = self.dir_x if axis == 'x' else self.dir_y
+        
+        try:
+            # Use same direction as homing (opposite of positive movement direction)
+            if axis == 'x':
+                direction = GPIO.LOW if self.x_clockwise else GPIO.HIGH  # Same as homing
+            else:  # y axis
+                direction = GPIO.LOW if self.y_clockwise else GPIO.HIGH  # Same as homing
+            
+            GPIO.output(dir_pin, direction)
+            
+            # Move the specified number of steps
+            for _ in range(steps):
+                if self.stop_threads:
+                    self.logger.info(f"Move-back stopped by user")
+                    return False
+                
+                # Generate step pulse
+                GPIO.output(step_pin, GPIO.HIGH)
+                time.sleep(self.step_delay)
+                GPIO.output(step_pin, GPIO.LOW)
+                time.sleep(self.step_delay)
+            
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Failed to move back {axis.upper()} axis: {e}")
             return False
     
     def move_to(self, x: int, y: int) -> bool:
