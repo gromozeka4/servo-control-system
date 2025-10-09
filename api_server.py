@@ -831,6 +831,34 @@ class ServoAPIServer:
                     'error': str(e)
                 }), 500
         
+        @self.app.route('/api/xy/release', methods=['POST'])
+        @self.require_api_key
+        def release_xy_steppers():
+            """Release XY stepper motors - set all control pins low."""
+            try:
+                success = self.xy_controller.release_steppers()
+                
+                if success:
+                    return jsonify({
+                        'success': True,
+                        'message': 'XY stepper motors released successfully',
+                        'data': {
+                            'timestamp': time.time()
+                        }
+                    })
+                else:
+                    return jsonify({
+                        'success': False,
+                        'error': 'Failed to release XY stepper motors'
+                    }), 500
+                    
+            except Exception as e:
+                self.logger.error(f"Release XY steppers request failed: {e}")
+                return jsonify({
+                    'success': False,
+                    'error': str(e)
+                }), 500
+        
         # Error handlers
         @self.app.errorhandler(404)
         def not_found(error):

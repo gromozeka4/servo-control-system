@@ -398,6 +398,21 @@ class XYStepperHardware:
             self.logger.error(f"Emergency stop failed: {e}")
             return False
     
+    def release_steppers(self) -> bool:
+        """Release stepper motors by setting all control pins low."""
+        try:
+            # Set all step and direction pins to low
+            GPIO.output(self.step_x, GPIO.LOW)
+            GPIO.output(self.step_y, GPIO.LOW)
+            GPIO.output(self.dir_x, GPIO.LOW)
+            GPIO.output(self.dir_y, GPIO.LOW)
+            
+            self.logger.info("Stepper motors released - all control pins set to low")
+            return True
+        except Exception as e:
+            self.logger.error(f"Failed to release steppers: {e}")
+            return False
+    
     def get_status(self) -> Dict:
         """Get comprehensive status of the XY hardware system."""
         return {

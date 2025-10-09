@@ -257,6 +257,22 @@ class XYController:
             self.logger.error(f"Emergency stop error: {e}")
             return False
     
+    def release_steppers(self) -> bool:
+        """Release stepper motors - set all control pins low."""
+        try:
+            success = self.hardware.release_steppers()
+            
+            if success:
+                self.logger.info("Stepper motors released successfully")
+            else:
+                self.logger.error("Failed to release stepper motors")
+            
+            return success
+            
+        except Exception as e:
+            self.logger.error(f"Release steppers error: {e}")
+            return False
+    
     def get_status(self) -> Dict:
         """Get comprehensive status of the XY controller system."""
         current_pos = self.get_position()
