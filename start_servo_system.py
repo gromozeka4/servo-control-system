@@ -15,6 +15,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from servo_controller import ServoController
+from xy_controller import XYController
 from api_server import ServoAPIServer
 from web_interface import WebInterface
 
@@ -47,7 +48,15 @@ def run_hardware_only(config):
     print("Press Ctrl+C to stop")
     
     try:
-        controller = ServoController(config)
+        servo_controller = ServoController(config)
+        xy_controller = XYController(config)
+        
+        print("Initializing XY positioning system...")
+        if xy_controller.initialize_system():
+            print("✓ XY positioning system ready")
+        else:
+            print("⚠️  XY positioning system initialization failed")
+        
         print("Hardware interface ready. Use Ctrl+C to stop.")
         
         # Keep running
@@ -57,7 +66,8 @@ def run_hardware_only(config):
             
     except KeyboardInterrupt:
         print("\nShutting down...")
-        controller.cleanup()
+        servo_controller.cleanup()
+        xy_controller.cleanup()
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
@@ -70,8 +80,16 @@ def run_with_api(config):
     print("Press Ctrl+C to stop")
     
     try:
-        controller = ServoController(config)
-        api_server = ServoAPIServer(config, controller)
+        servo_controller = ServoController(config)
+        xy_controller = XYController(config)
+        
+        print("Initializing XY positioning system...")
+        if xy_controller.initialize_system():
+            print("✓ XY positioning system ready")
+        else:
+            print("⚠️  XY positioning system initialization failed")
+        
+        api_server = ServoAPIServer(config, servo_controller, xy_controller)
         
         if api_server.start():
             print("API server started successfully")
@@ -88,8 +106,10 @@ def run_with_api(config):
         print("\nShutting down...")
         if 'api_server' in locals():
             api_server.stop()
-        if 'controller' in locals():
-            controller.cleanup()
+        if 'servo_controller' in locals():
+            servo_controller.cleanup()
+        if 'xy_controller' in locals():
+            xy_controller.cleanup()
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
@@ -102,16 +122,55 @@ def run_with_web_interface(config):
     print("Press Ctrl+C to stop")
     
     try:
-        controller = ServoController(config)
-        web_interface = WebInterface(config, controller)
+        servo_controller = ServoController(config)
+        xy_controller = XYController(config)
+        
+        print("Initializing XY positioning system...")
+        if xy_controller.initialize_system():
+            print("✓ XY positioning system ready")
+        else:
+            print("⚠️  XY positioning system initialization failed")
+        
+        web_interface = WebInterface(config, servo_controller)
         
         print("Web interface started successfully")
         web_interface.run(port=8080)
         
     except KeyboardInterrupt:
         print("\nShutting down...")
-        if 'controller' in locals():
-            controller.cleanup()
+        if 'servo_controller' in locals():
+            servo_controller.cleanup()
+        if 'xy_controller' in locals():
+            xy_controller.cleanup()
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+
+
+def run_xy_only(config):
+    """Run only the XY positioning system."""
+    print("Starting XY positioning system only...")
+    print("Press Ctrl+C to stop")
+    
+    try:
+        xy_controller = XYController(config)
+        
+        print("Initializing XY positioning system...")
+        if xy_controller.initialize_system():
+            print("✓ XY positioning system ready")
+            print("System is homed and ready for positioning")
+        else:
+            print("⚠️  XY positioning system initialization failed")
+            return
+        
+        # Keep running
+        while True:
+            import time
+            time.sleep(1)
+            
+    except KeyboardInterrupt:
+        print("\nShutting down...")
+        xy_controller.cleanup()
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
@@ -125,10 +184,17 @@ def run_full_system(config):
     print("Press Ctrl+C to stop")
     
     try:
-        controller = ServoController(config)
+        servo_controller = ServoController(config)
+        xy_controller = XYController(config)
+        
+        print("Initializing XY positioning system...")
+        if xy_controller.initialize_system():
+            print("✓ XY positioning system ready")
+        else:
+            print("⚠️  XY positioning system initialization failed")
         
         # Start API server in background
-        api_server = ServoAPIServer(config, controller)
+        api_server = ServoAPIServer(config, servo_controller, xy_controller)
         if api_server.start():
             print("API server started successfully")
         else:
@@ -136,7 +202,7 @@ def run_full_system(config):
             return
         
         # Start web interface (this will block)
-        web_interface = WebInterface(config, controller)
+        web_interface = WebInterface(config, servo_controller)
         print("Web interface started successfully")
         web_interface.run(port=8080)
         
@@ -144,8 +210,10 @@ def run_full_system(config):
         print("\nShutting down...")
         if 'api_server' in locals():
             api_server.stop()
-        if 'controller' in locals():
-            controller.cleanup()
+        if 'servo_controller' in locals():
+            servo_controller.cleanup()
+        if 'xy_controller' in locals():
+            xy_controller.cleanup()
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
@@ -156,9 +224,9 @@ def main():
     parser = argparse.ArgumentParser(description="Servo Control System Startup")
     parser.add_argument(
         '--mode',
-        choices=['hardware', 'api', 'web', 'full'],
+        choices=['hardware', 'api', 'web', 'xy', 'full'],
         default='full',
-        help='Run mode (default: full)'
+        help='Run mode: hardware (servo only), api (servo+xy+api), web (servo+xy+web), xy (xy only), full (servo+xy+api+web) (default: full)'
     )
     parser.add_argument(
         '--config',
@@ -200,6 +268,8 @@ def main():
         run_with_api(config)
     elif args.mode == 'web':
         run_with_web_interface(config)
+    elif args.mode == 'xy':
+        run_xy_only(config)
     elif args.mode == 'full':
         run_full_system(config)
 
