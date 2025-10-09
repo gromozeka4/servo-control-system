@@ -40,7 +40,7 @@ class XYController:
         self.logger = logging.getLogger(__name__)
         
         # Initialize hardware interface
-        self.hardware = XYStepperHardware(config)
+        self.hardware = XYStepperHardware(config['xy_system'])
         
         # Movement management
         self.movement_lock = threading.Lock()
