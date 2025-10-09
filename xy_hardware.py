@@ -149,8 +149,10 @@ class XYStepperHardware:
         try:
             self.logger.info(f"Homing {axis.upper()} axis...")
             
-            # Set direction for homing (clockwise to endstop)
-            GPIO.output(dir_pin, GPIO.HIGH if axis == 'x' else GPIO.LOW)
+            # Set direction for homing (move towards endstop)
+            # Try both directions - start with LOW for both axes
+            GPIO.output(dir_pin, GPIO.LOW)
+            self.logger.info(f"  Direction set to LOW for {axis.upper()} axis homing")
             
             # Move until endstop is triggered
             steps = 0
@@ -264,7 +266,7 @@ class XYStepperHardware:
             return True
         
         step_pin = self.step_x if axis == 'x' else self.step_y
-        dir_pin = self.dir_x if axis == 'y' else self.dir_y
+        dir_pin = self.dir_x if axis == 'x' else self.dir_y
         endstop_pin = self.endstop_x if axis == 'x' else self.endstop_y
         
         try:
