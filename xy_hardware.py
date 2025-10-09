@@ -117,8 +117,8 @@ class XYStepperHardware:
             
             # Move back from endstops to establish home position
             self.logger.info("Moving back from endstops to establish home position...")
-            self._move_axis_steps_no_endstop_check('x', -self.homing_steps_back)
-            self._move_axis_steps_no_endstop_check('y', -self.homing_steps_back)
+            self._move_axis_steps('x', -self.homing_steps_back)
+            self._move_axis_steps('y', -self.homing_steps_back)
             
             # Reset position counters
             self.current_x = 0
@@ -149,11 +149,8 @@ class XYStepperHardware:
         try:
             self.logger.info(f"Homing {axis.upper()} axis...")
             
-            # Set direction for homing (move towards endstop)
-            # X axis uses LOW, Y axis uses HIGH
-            direction = GPIO.LOW if axis == 'x' else GPIO.HIGH
-            GPIO.output(dir_pin, direction)
-            self.logger.info(f"  Direction set to {'LOW' if direction == GPIO.LOW else 'HIGH'} for {axis.upper()} axis homing")
+            # Set direction for homing (clockwise to endstop)
+            GPIO.output(dir_pin, GPIO.HIGH if axis == 'x' else GPIO.LOW)
             
             # Move until endstop is triggered
             steps = 0
@@ -214,20 +211,12 @@ class XYStepperHardware:
                     self.logger.error("Endstop triggered - movement aborted")
                     return False
                 
-                # Move both axes simultaneously
+                # Move both axes
                 success = True
-                if dx != 0 and dy != 0:
-                    # Both axes need to move - move simultaneously
-                    self.logger.info(f"Using simultaneous movement: dx={dx}, dy={dy}")
-                    success = self._move_axes_simultaneously(dx, dy)
-                elif dx != 0:
-                    # Only X axis needs to move
-                    self.logger.info(f"Using single-axis movement: X only, dx={dx}")
-                    success = self._move_axis_steps('x', dx)
-                elif dy != 0:
-                    # Only Y axis needs to move
-                    self.logger.info(f"Using single-axis movement: Y only, dy={dy}")
-                    success = self._move_axis_steps('y', dy)
+                if dx != 0:
+                    success &= self._move_axis_steps('x', dx)
+                if dy != 0:
+                    success &= self._move_axis_steps('y', dy)
                 
                 if success:
                     self.current_x = x
@@ -275,7 +264,7 @@ class XYStepperHardware:
             return True
         
         step_pin = self.step_x if axis == 'x' else self.step_y
-        dir_pin = self.dir_x if axis == 'x' else self.dir_y
+        dir_pin = self.dir_x if axis == 'y' else self.dir_y
         endstop_pin = self.endstop_x if axis == 'x' else self.endstop_y
         
         try:
@@ -304,114 +293,6 @@ class XYStepperHardware:
             
         except Exception as e:
             self.logger.error(f"Failed to move {axis.upper()} axis by {steps} steps: {e}")
-            return False
-    
-    def _move_axis_steps_no_endstop_check(self, axis: str, steps: int) -> bool:
-        """
-        Move a single axis by a specified number of steps without checking endstops.
-        Used for moving back from endstops after homing.
-        
-        Args:
-            axis: 'x' or 'y'
-            steps: Number of steps (positive or negative)
-            
-        Returns:
-            bool: True if movement successful, False otherwise
-        """
-        if steps == 0:
-            return True
-        
-        step_pin = self.step_x if axis == 'x' else self.step_y
-        dir_pin = self.dir_x if axis == 'x' else self.dir_y
-        
-        try:
-            # Set direction based on step sign
-            direction = GPIO.HIGH if steps > 0 else GPIO.LOW
-            GPIO.output(dir_pin, direction)
-            
-            # Move the specified number of steps
-            for _ in range(abs(steps)):
-                if self.stop_threads:
-                    self.logger.info(f"Movement stopped by user")
-                    return False
-                
-                # Generate step pulse
-                GPIO.output(step_pin, GPIO.HIGH)
-                time.sleep(self.step_delay)
-                GPIO.output(step_pin, GPIO.LOW)
-                time.sleep(self.step_delay)
-            
-            return True
-            
-        except Exception as e:
-            self.logger.error(f"Failed to move {axis.upper()} axis by {steps} steps: {e}")
-            return False
-    
-    def _move_axes_simultaneously(self, dx: int, dy: int) -> bool:
-        """
-        Move both X and Y axes simultaneously.
-        
-        Args:
-            dx: X movement in steps (positive or negative)
-            dy: Y movement in steps (positive or negative)
-            
-        Returns:
-            bool: True if movement successful, False otherwise
-        """
-        if dx == 0 and dy == 0:
-            return True
-        
-        try:
-            # Set directions for both axes
-            x_direction = GPIO.HIGH if dx > 0 else GPIO.LOW
-            y_direction = GPIO.HIGH if dy > 0 else GPIO.LOW
-            
-            GPIO.output(self.dir_x, x_direction)
-            GPIO.output(self.dir_y, y_direction)
-            
-            # Calculate the maximum number of steps needed
-            max_steps = max(abs(dx), abs(dy))
-            
-            self.logger.info(f"Moving simultaneously: X={dx} steps, Y={dy} steps (max={max_steps})")
-            self.logger.info(f"X direction: {'HIGH' if x_direction == GPIO.HIGH else 'LOW'}, Y direction: {'HIGH' if y_direction == GPIO.HIGH else 'LOW'}")
-            
-            # Move both axes step by step
-            for step in range(max_steps):
-                if self.stop_threads:
-                    self.logger.info("Simultaneous movement stopped by user")
-                    return False
-                
-                # Check for endstops during movement
-                if GPIO.input(self.endstop_x) == GPIO.LOW:
-                    self.logger.warning("X axis endstop triggered during simultaneous movement")
-                    return False
-                if GPIO.input(self.endstop_y) == GPIO.LOW:
-                    self.logger.warning("Y axis endstop triggered during simultaneous movement")
-                    return False
-                
-                # Step X axis if it still needs to move
-                if step < abs(dx):
-                    GPIO.output(self.step_x, GPIO.HIGH)
-                
-                # Step Y axis if it still needs to move
-                if step < abs(dy):
-                    GPIO.output(self.step_y, GPIO.HIGH)
-                
-                # Small delay for step pulse
-                time.sleep(self.step_delay)
-                
-                # Lower both step pins
-                GPIO.output(self.step_x, GPIO.LOW)
-                GPIO.output(self.step_y, GPIO.LOW)
-                
-                # Delay between steps
-                time.sleep(self.step_delay)
-            
-            self.logger.info("Simultaneous movement completed")
-            return True
-            
-        except Exception as e:
-            self.logger.error(f"Failed simultaneous movement: {e}")
             return False
     
     def _check_endstops(self) -> bool:
