@@ -102,8 +102,8 @@ xy_system:
     
     # Direction configuration (True = clockwise, False = counter-clockwise)
     directions:
-      x_clockwise: False  # Set to True if X motor rotates wrong direction
-      y_clockwise: True   # Set to True if Y motor rotates wrong direction
+      x_clockwise: True   # Set to True if X motor rotates wrong direction
+      y_clockwise: False  # Set to True if Y motor rotates wrong direction
     
     # Timing configuration
     step_delay: 0.001  # Delay between steps in seconds
