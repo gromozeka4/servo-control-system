@@ -18,6 +18,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from servo_controller import ServoController
+from xy_controller import XYController
 from api_server import ServoAPIServer
 from network_utils import NetworkManager
 
@@ -199,14 +200,27 @@ def main():
         
         # Initialize servo controller
         logger.info("Initializing servo controller...")
-        controller = ServoController(config)
+        servo_controller = ServoController(config)
         logger.info("Servo controller initialized successfully")
+        
+        # Initialize XY positioning controller
+        logger.info("Initializing XY positioning controller...")
+        xy_controller = XYController(config)
+        logger.info("XY positioning controller initialized successfully")
+        
+        # Initialize XY system
+        logger.info("Initializing XY positioning system...")
+        if xy_controller.initialize_system():
+            logger.info("XY positioning system initialized successfully")
+        else:
+            logger.error("Failed to initialize XY positioning system")
+            raise Exception("XY system initialization failed")
         
         # Initialize API server (if enabled)
         api_server = None
         if not args.no_api:
             logger.info("Initializing API server...")
-            api_server = ServoAPIServer(config, controller)
+            api_server = ServoAPIServer(config, servo_controller, xy_controller)
             
             # Start API server
             if api_server.start():
@@ -252,8 +266,9 @@ def main():
             logger.info("Stopping API server...")
             api_server.stop()
         
-        logger.info("Cleaning up controller...")
-        controller.cleanup()
+        logger.info("Cleaning up controllers...")
+        servo_controller.cleanup()
+        xy_controller.cleanup()
         
         logger.info("Shutdown completed successfully")
         

@@ -80,6 +80,31 @@ safety:
   emergency_stop_enabled: true
   power_management: true
 
+# XY Positioning System Configuration
+xy_system:
+  # Button grid configuration
+  button_grid:
+    rows: 4
+    cols: 4
+    spacing_x: 100  # Steps between buttons horizontally
+    spacing_y: 100  # Steps between buttons vertically
+  
+  # Hardware configuration for stepper motors and endstops
+  xy_hardware:
+    # GPIO pin assignments
+    pins:
+      step_x: 23
+      dir_x: 24
+      endstop_x: 25
+      step_y: 17
+      dir_y: 27
+      endstop_y: 22
+    
+    # Timing configuration
+    step_delay: 0.001  # Delay between steps in seconds
+    homing_delay: 0.001  # Delay during homing sequence
+    homing_steps_back: 100  # Steps to move back from endstop after homing
+
 # Security Configuration
 security:
   authentication:
