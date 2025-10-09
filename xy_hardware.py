@@ -218,12 +218,15 @@ class XYStepperHardware:
                 success = True
                 if dx != 0 and dy != 0:
                     # Both axes need to move - move simultaneously
+                    self.logger.info(f"Using simultaneous movement: dx={dx}, dy={dy}")
                     success = self._move_axes_simultaneously(dx, dy)
                 elif dx != 0:
                     # Only X axis needs to move
+                    self.logger.info(f"Using single-axis movement: X only, dx={dx}")
                     success = self._move_axis_steps('x', dx)
                 elif dy != 0:
                     # Only Y axis needs to move
+                    self.logger.info(f"Using single-axis movement: Y only, dy={dy}")
                     success = self._move_axis_steps('y', dy)
                 
                 if success:
@@ -329,6 +332,7 @@ class XYStepperHardware:
             max_steps = max(abs(dx), abs(dy))
             
             self.logger.info(f"Moving simultaneously: X={dx} steps, Y={dy} steps (max={max_steps})")
+            self.logger.info(f"X direction: {'HIGH' if x_direction == GPIO.HIGH else 'LOW'}, Y direction: {'HIGH' if y_direction == GPIO.HIGH else 'LOW'}")
             
             # Move both axes step by step
             for step in range(max_steps):
@@ -344,11 +348,11 @@ class XYStepperHardware:
                     self.logger.warning("Y axis endstop triggered during simultaneous movement")
                     return False
                 
-                # Step X axis if needed
+                # Step X axis if it still needs to move
                 if step < abs(dx):
                     GPIO.output(self.step_x, GPIO.HIGH)
                 
-                # Step Y axis if needed
+                # Step Y axis if it still needs to move
                 if step < abs(dy):
                     GPIO.output(self.step_y, GPIO.HIGH)
                 
