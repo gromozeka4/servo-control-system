@@ -42,6 +42,10 @@ class XYStepperHardware:
         self.homing_delay = config['xy_hardware']['homing_delay']
         self.homing_steps_back = config['xy_hardware']['homing_steps_back']
         
+        # Direction configuration
+        self.x_clockwise = config['xy_hardware']['directions']['x_clockwise']
+        self.y_clockwise = config['xy_hardware']['directions']['y_clockwise']
+        
         # State tracking
         self.current_x = 0
         self.current_y = 0
@@ -149,8 +153,12 @@ class XYStepperHardware:
         try:
             self.logger.info(f"Homing {axis.upper()} axis...")
             
-            # Set direction for homing (clockwise to endstop)
-            GPIO.output(dir_pin, GPIO.HIGH if axis == 'x' else GPIO.LOW)
+            # Set direction for homing based on configuration
+            if axis == 'x':
+                direction = GPIO.HIGH if self.x_clockwise else GPIO.LOW
+            else:  # y axis
+                direction = GPIO.HIGH if self.y_clockwise else GPIO.LOW
+            GPIO.output(dir_pin, direction)
             
             # Move until endstop is triggered
             steps = 0
@@ -264,12 +272,24 @@ class XYStepperHardware:
             return True
         
         step_pin = self.step_x if axis == 'x' else self.step_y
-        dir_pin = self.dir_x if axis == 'y' else self.dir_y
+        dir_pin = self.dir_x if axis == 'x' else self.dir_y
         endstop_pin = self.endstop_x if axis == 'x' else self.endstop_y
         
         try:
-            # Set direction based on step sign
-            direction = GPIO.HIGH if steps > 0 else GPIO.LOW
+            # Set direction based on step sign and motor direction configuration
+            if axis == 'x':
+                # For X axis: positive steps go in configured direction
+                if steps > 0:
+                    direction = GPIO.HIGH if self.x_clockwise else GPIO.LOW
+                else:
+                    direction = GPIO.LOW if self.x_clockwise else GPIO.HIGH
+            else:  # y axis
+                # For Y axis: positive steps go in configured direction
+                if steps > 0:
+                    direction = GPIO.HIGH if self.y_clockwise else GPIO.LOW
+                else:
+                    direction = GPIO.LOW if self.y_clockwise else GPIO.HIGH
+            
             GPIO.output(dir_pin, direction)
             
             # Move the specified number of steps

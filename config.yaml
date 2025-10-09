@@ -100,6 +100,11 @@ xy_system:
       dir_y: 27
       endstop_y: 22
     
+    # Direction configuration (True = clockwise, False = counter-clockwise)
+    directions:
+      x_clockwise: False  # Set to True if X motor rotates wrong direction
+      y_clockwise: False  # Set to True if Y motor rotates wrong direction
+    
     # Timing configuration
     step_delay: 0.001  # Delay between steps in seconds
     homing_delay: 0.001  # Delay during homing sequence
