@@ -153,11 +153,11 @@ class XYStepperHardware:
         try:
             self.logger.info(f"Homing {axis.upper()} axis...")
             
-            # Set direction for homing based on configuration
+            # Set direction for homing (opposite of positive movement direction)
             if axis == 'x':
-                direction = GPIO.HIGH if self.x_clockwise else GPIO.LOW
+                direction = GPIO.LOW if self.x_clockwise else GPIO.HIGH  # Opposite of positive direction
             else:  # y axis
-                direction = GPIO.HIGH if self.y_clockwise else GPIO.LOW
+                direction = GPIO.LOW if self.y_clockwise else GPIO.HIGH  # Opposite of positive direction
             GPIO.output(dir_pin, direction)
             
             # Move until endstop is triggered
