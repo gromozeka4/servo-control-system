@@ -67,8 +67,8 @@ class XYController:
         
         for row in range(self.grid_rows):
             for col in range(self.grid_cols):
-                x_steps = self.grid_origin_x + col * self.grid_spacing_x
-                y_steps = self.grid_origin_y + row * self.grid_spacing_y
+                x_steps = self.grid_origin_x - col * self.grid_spacing_x  # X decreases as column increases
+                y_steps = self.grid_origin_y - row * self.grid_spacing_y  # Y decreases as row increases
                 
                 position = ButtonPosition(
                     row=row,
