@@ -202,11 +202,11 @@ class XYStepperHardware:
         dir_pin = self.dir_x if axis == 'x' else self.dir_y
         
         try:
-            # Use same direction as homing (opposite of positive movement direction)
+            # Use opposite direction from homing (same as positive movement direction)
             if axis == 'x':
-                direction = GPIO.LOW if self.x_clockwise else GPIO.HIGH  # Same as homing
+                direction = GPIO.HIGH if self.x_clockwise else GPIO.LOW  # Opposite of homing
             else:  # y axis
-                direction = GPIO.LOW if self.y_clockwise else GPIO.HIGH  # Same as homing
+                direction = GPIO.HIGH if self.y_clockwise else GPIO.LOW  # Opposite of homing
             
             GPIO.output(dir_pin, direction)
             
