@@ -101,9 +101,11 @@ xy_system:
       endstop_y: 25  # Was endstop_x in original
     
     # Direction configuration (True = clockwise, False = counter-clockwise)
+    # Note: These are for POSITIVE movement (away from home)
+    # Homing uses opposite direction to reach endstops
     directions:
-      x_clockwise: True   # Set to True if X motor rotates wrong direction
-      y_clockwise: False  # Set to True if Y motor rotates wrong direction
+      x_clockwise: False  # Positive X steps go counter-clockwise (away from home)
+      y_clockwise: True   # Positive Y steps go clockwise (away from home)
     
     # Timing configuration
     step_delay: 0.001  # Delay between steps in seconds
