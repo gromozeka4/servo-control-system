@@ -52,6 +52,8 @@ class XYController:
         self.grid_spacing_y = self.grid_config['spacing_y']
         self.grid_rows = self.grid_config['rows']
         self.grid_cols = self.grid_config['cols']
+        self.grid_origin_x = self.grid_config.get('origin_x', 0)
+        self.grid_origin_y = self.grid_config.get('origin_y', 0)
         
         # Initialize button positions
         self.button_positions = self._calculate_button_positions()
@@ -65,8 +67,8 @@ class XYController:
         
         for row in range(self.grid_rows):
             for col in range(self.grid_cols):
-                x_steps = col * self.grid_spacing_x
-                y_steps = row * self.grid_spacing_y
+                x_steps = self.grid_origin_x + col * self.grid_spacing_x
+                y_steps = self.grid_origin_y + row * self.grid_spacing_y
                 
                 position = ButtonPosition(
                     row=row,
