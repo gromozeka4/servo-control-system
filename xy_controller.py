@@ -8,7 +8,7 @@ This module coordinates movement, homing, and position tracking.
 import time
 import threading
 import logging
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 from xy_hardware import XYStepperHardware
 
