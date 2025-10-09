@@ -117,8 +117,8 @@ class XYStepperHardware:
             
             # Move back from endstops to establish home position
             self.logger.info("Moving back from endstops to establish home position...")
-            self._move_axis_steps('x', -self.homing_steps_back)
-            self._move_axis_steps('y', -self.homing_steps_back)
+            self._move_axis_steps_no_endstop_check('x', -self.homing_steps_back)
+            self._move_axis_steps_no_endstop_check('y', -self.homing_steps_back)
             
             # Reset position counters
             self.current_x = 0
@@ -292,6 +292,47 @@ class XYStepperHardware:
                 # Check for endstop during movement
                 if GPIO.input(endstop_pin) == GPIO.LOW:
                     self.logger.warning(f"{axis.upper()} axis endstop triggered during movement")
+                    return False
+                
+                # Generate step pulse
+                GPIO.output(step_pin, GPIO.HIGH)
+                time.sleep(self.step_delay)
+                GPIO.output(step_pin, GPIO.LOW)
+                time.sleep(self.step_delay)
+            
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Failed to move {axis.upper()} axis by {steps} steps: {e}")
+            return False
+    
+    def _move_axis_steps_no_endstop_check(self, axis: str, steps: int) -> bool:
+        """
+        Move a single axis by a specified number of steps without checking endstops.
+        Used for moving back from endstops after homing.
+        
+        Args:
+            axis: 'x' or 'y'
+            steps: Number of steps (positive or negative)
+            
+        Returns:
+            bool: True if movement successful, False otherwise
+        """
+        if steps == 0:
+            return True
+        
+        step_pin = self.step_x if axis == 'x' else self.step_y
+        dir_pin = self.dir_x if axis == 'x' else self.dir_y
+        
+        try:
+            # Set direction based on step sign
+            direction = GPIO.HIGH if steps > 0 else GPIO.LOW
+            GPIO.output(dir_pin, direction)
+            
+            # Move the specified number of steps
+            for _ in range(abs(steps)):
+                if self.stop_threads:
+                    self.logger.info(f"Movement stopped by user")
                     return False
                 
                 # Generate step pulse
