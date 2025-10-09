@@ -236,7 +236,7 @@ class XYController:
         Returns:
             bool: True if system is ready, False otherwise
         """
-        return self.hardware.is_homed() and not self.is_moving
+        return self.hardware.is_system_homed() and not self.is_moving
     
     def emergency_stop(self) -> bool:
         """Emergency stop - stop all movements immediately."""

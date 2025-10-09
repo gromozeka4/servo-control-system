@@ -341,7 +341,7 @@ class XYStepperHardware:
         """
         return (self.current_x, self.current_y)
     
-    def is_homed(self) -> bool:
+    def is_system_homed(self) -> bool:
         """
         Check if system is homed.
         
