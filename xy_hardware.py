@@ -121,8 +121,8 @@ class XYStepperHardware:
             
             # Move back from endstops to establish home position
             self.logger.info("Moving back from endstops to establish home position...")
-            self._move_axis_steps('x', -self.homing_steps_back)
-            self._move_axis_steps('y', -self.homing_steps_back)
+            self._move_axis_steps('x', -self.homing_steps_back, check_endstops=False)
+            self._move_axis_steps('y', -self.homing_steps_back, check_endstops=False)
             
             # Reset position counters
             self.current_x = 0
@@ -254,7 +254,7 @@ class XYStepperHardware:
         
         return self.move_to(new_x, new_y)
     
-    def _move_axis_steps(self, axis: str, steps: int) -> bool:
+    def _move_axis_steps(self, axis: str, steps: int, check_endstops: bool = True) -> bool:
         """
         Move a single axis by a specified number of steps.
         
@@ -295,8 +295,8 @@ class XYStepperHardware:
                     self.logger.info(f"Movement stopped by user")
                     return False
                 
-                # Check for endstop during movement
-                if GPIO.input(endstop_pin) == GPIO.LOW:
+                # Check for endstop during movement (if enabled)
+                if check_endstops and GPIO.input(endstop_pin) == GPIO.LOW:
                     self.logger.warning(f"{axis.upper()} axis endstop triggered during movement")
                     return False
                 
