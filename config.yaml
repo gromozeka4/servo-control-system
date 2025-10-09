@@ -91,19 +91,19 @@ xy_system:
   
   # Hardware configuration for stepper motors and endstops
   xy_hardware:
-    # GPIO pin assignments
+    # GPIO pin assignments (swapped X and Y)
     pins:
-      step_x: 23
-      dir_x: 24
-      endstop_x: 25
-      step_y: 17
-      dir_y: 27
-      endstop_y: 22
+      step_x: 17  # Was step_y in original
+      dir_x: 27   # Was dir_y in original
+      endstop_x: 22  # Was endstop_y in original
+      step_y: 23  # Was step_x in original
+      dir_y: 24   # Was dir_x in original
+      endstop_y: 25  # Was endstop_x in original
     
     # Direction configuration (True = clockwise, False = counter-clockwise)
     directions:
       x_clockwise: False  # Set to True if X motor rotates wrong direction
-      y_clockwise: False  # Set to True if Y motor rotates wrong direction
+      y_clockwise: True   # Set to True if Y motor rotates wrong direction
     
     # Timing configuration
     step_delay: 0.001  # Delay between steps in seconds
