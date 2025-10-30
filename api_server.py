@@ -15,6 +15,7 @@ import time
 
 from servo_controller import ServoController
 from xy_controller import XYController
+from usb_power_switch import USBPowerSwitchManager
 
 
 class ServoAPIServer:
@@ -49,6 +50,16 @@ class ServoAPIServer:
         # Load API keys from environment
         self.api_keys = self._load_api_keys()
         
+        # Optional USB power switch manager
+        self.usb_power: Optional[USBPowerSwitchManager] = None
+        try:
+            if 'usb_power' in self.config and self.config['usb_power'].get('switches'):
+                self.usb_power = USBPowerSwitchManager(self.config)
+                self.logger.info("USB power switch manager initialized")
+        except Exception as e:
+            self.logger.error(f"Failed to initialize USB power manager: {e}")
+            self.usb_power = None
+
         # Register API routes
         self._register_routes()
         
@@ -139,10 +150,12 @@ class ServoAPIServer:
             try:
                 servo_status = self.servo_controller.get_status()
                 xy_status = self.xy_controller.get_status()
+                usb_status = self.usb_power.get_status() if self.usb_power else {'initialized': False, 'switches': []}
                 
                 combined_status = {
                     'servo_system': servo_status,
                     'xy_system': xy_status,
+                    'usb_power': usb_status,
                     'timestamp': time.time()
                 }
                 
@@ -702,6 +715,46 @@ class ServoAPIServer:
                     'success': False,
                     'error': str(e)
                 }), 500
+
+        # USB Power Switch endpoints (optional)
+        @self.app.route('/api/usb-power', methods=['GET'])
+        @self.require_api_key
+        def list_usb_switches():
+            try:
+                if not self.usb_power:
+                    return jsonify({'success': True, 'data': {'switches': []}})
+                return jsonify({'success': True, 'data': {'switches': self.usb_power.list_switches()}})
+            except Exception as e:
+                self.logger.error(f"List USB switches failed: {e}")
+                return jsonify({'success': False, 'error': str(e)}), 500
+
+        @self.app.route('/api/usb-power/<switch_id>/on', methods=['POST'])
+        @self.require_api_key
+        def usb_power_on(switch_id):
+            try:
+                if not self.usb_power:
+                    return jsonify({'success': False, 'error': 'USB power not configured'}), 400
+                ok = self.usb_power.set_state(switch_id, True)
+                if not ok:
+                    return jsonify({'success': False, 'error': f'Unknown switch id: {switch_id}'}), 404
+                return jsonify({'success': True, 'data': {'id': switch_id, 'enabled': True}})
+            except Exception as e:
+                self.logger.error(f"USB power on failed: {e}")
+                return jsonify({'success': False, 'error': str(e)}), 500
+
+        @self.app.route('/api/usb-power/<switch_id>/off', methods=['POST'])
+        @self.require_api_key
+        def usb_power_off(switch_id):
+            try:
+                if not self.usb_power:
+                    return jsonify({'success': False, 'error': 'USB power not configured'}), 400
+                ok = self.usb_power.set_state(switch_id, False)
+                if not ok:
+                    return jsonify({'success': False, 'error': f'Unknown switch id: {switch_id}'}), 404
+                return jsonify({'success': True, 'data': {'id': switch_id, 'enabled': False}})
+            except Exception as e:
+                self.logger.error(f"USB power off failed: {e}")
+                return jsonify({'success': False, 'error': str(e)}), 500
         
         @self.app.route('/api/xy/position', methods=['GET'])
         @self.require_api_key
