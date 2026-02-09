@@ -16,7 +16,7 @@ hardware:
   # Servo configuration
   servos:
     # Servo pulse width range in microseconds (min, max)
-    pulse_range: [500, 2500]  # Standard SG90 range
+    pulse_range: [544, 2600]  # Calibrated for extended range servo
     # Default angle range
     angle_range: [0, 180]  # Degrees
     # Safety limits
@@ -42,22 +42,22 @@ sequences:
   
   reset_all:
     - channel: 0
-      angle: 90
+      angle: 0
       duration: 0.5
     - channel: 1
-      angle: 90
+      angle: 0
       duration: 0.5
     - channel: 2
-      angle: 90
+      angle: 0
       duration: 0.5
     - channel: 3
-      angle: 90
+      angle: 0
       duration: 0.5
     - channel: 4
-      angle: 90
+      angle: 0
       duration: 0.5
     - channel: 5
-      angle: 90
+      angle: 0
       duration: 0.5
 
 # HTTP API Configuration

@@ -641,6 +641,26 @@ class ServoAPIServer:
     def _run_server(self):
         """Run the Flask server."""
         try:
+            import warnings
+            import logging
+            
+            # Suppress Flask development server warnings more comprehensively
+            warnings.filterwarnings("ignore", message=".*development server.*")
+            warnings.filterwarnings("ignore", message=".*WARNING.*development server.*")
+            warnings.filterwarnings("ignore", category=UserWarning, module="werkzeug")
+            
+            # Also suppress werkzeug logger warnings
+            werkzeug_logger = logging.getLogger('werkzeug')
+            werkzeug_logger.setLevel(logging.ERROR)
+            
+            # Suppress the specific warning about development server
+            original_warn = werkzeug_logger.warning
+            def filtered_warning(msg, *args, **kwargs):
+                if "development server" in str(msg).lower():
+                    return
+                original_warn(msg, *args, **kwargs)
+            werkzeug_logger.warning = filtered_warning
+            
             self.app.run(
                 host=self.host,
                 port=self.port,
