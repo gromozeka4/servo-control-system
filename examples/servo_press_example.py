@@ -198,3 +198,10 @@ if __name__ == "__main__":
     print("• Single API call handles complete press-and-release sequence")
     print("• No network dependency between press and release")
     print("• Faster and more reliable than separate move calls")
+
+
+
+
+
+
+

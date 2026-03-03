@@ -115,5 +115,3 @@ class USBPowerSwitchManager:
             except Exception:
                 pass
             self._initialized = False
-
-

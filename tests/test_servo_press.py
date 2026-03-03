@@ -4,11 +4,16 @@ Test script for servo press functionality.
 Tests the new press_servo method and API endpoint.
 """
 
+import os
 import sys
 import time
 import logging
-from servo_controller import ServoController
-from servo_hardware import ServoHardware
+
+# Add repo root to Python path for imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from controllers.servo_controller import ServoController
+from hardware.servo_hardware import ServoHardware
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -156,3 +161,10 @@ if __name__ == "__main__":
     print("✅ Configurable press delay")
     print("✅ Thread-safe operation")
     print("✅ Ready for button pressing automation")
+
+
+
+
+
+
+

@@ -7,7 +7,7 @@ Provides a simple web-based interface for controlling servos and managing sequen
 import json
 import logging
 from flask import Flask, render_template_string, request, jsonify, redirect, url_for
-from servo_controller import ServoController
+from controllers.servo_controller import ServoController
 import yaml
 
 # HTML template for the web interface

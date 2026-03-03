@@ -8,6 +8,7 @@ This is the main script to run on the Raspberry Pi.
 import os
 import sys
 import signal
+import threading
 import time
 import logging
 import yaml
@@ -17,10 +18,10 @@ from pathlib import Path
 # Add current directory to Python path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from servo_controller import ServoController
-from xy_controller import XYController
-from api_server import ServoAPIServer
-from network_utils import NetworkManager
+from controllers.servo_controller import ServoController
+from controllers.xy_controller import XYController
+from server.api_server import ServoAPIServer
+from utils.network_utils import NetworkManager
 
 
 def setup_logging(config: dict) -> logging.Logger:
@@ -208,21 +209,12 @@ def main():
         xy_controller = XYController(config)
         logger.info("XY positioning controller initialized successfully")
         
-        # Initialize XY system
-        logger.info("Initializing XY positioning system...")
-        if xy_controller.initialize_system():
-            logger.info("XY positioning system initialized successfully")
-        else:
-            logger.error("Failed to initialize XY positioning system")
-            raise Exception("XY system initialization failed")
-        
-        # Initialize API server (if enabled)
+        # Initialize API server (if enabled) *before* XY homing so the API is responsive immediately.
+        # XY homing can block for a long time or hang if endstops are not connected.
         api_server = None
         if not args.no_api:
             logger.info("Initializing API server...")
             api_server = ServoAPIServer(config, servo_controller, xy_controller)
-            
-            # Start API server
             if api_server.start():
                 logger.info("API server started successfully")
                 logger.info(f"API available at: {network_manager.get_api_base_url()}")
@@ -230,6 +222,20 @@ def main():
             else:
                 logger.error("Failed to start API server")
                 api_server = None
+        
+        # Initialize XY system in background so it does not block API requests.
+        # If homing fails (e.g. no XY hardware or endstops), servo and API still work.
+        def xy_init_background():
+            logger.info("Initializing XY positioning system (background)...")
+            try:
+                if xy_controller.initialize_system():
+                    logger.info("XY positioning system initialized successfully")
+                else:
+                    logger.warning("XY positioning system initialization failed; XY endpoints may be unavailable")
+            except Exception as e:
+                logger.warning("XY initialization error (non-fatal): %s", e)
+        xy_init_thread = threading.Thread(target=xy_init_background, daemon=True)
+        xy_init_thread.start()
         
         # Set up signal handlers for graceful shutdown
         signal.signal(signal.SIGINT, signal_handler)

@@ -13,10 +13,10 @@ import yaml
 import signal
 from pathlib import Path
 
-# Add current directory to Python path for imports
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Add repo root to Python path for imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from xy_controller import XYController
+from controllers.xy_controller import XYController
 
 
 def setup_logging():
@@ -260,3 +260,10 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+
+

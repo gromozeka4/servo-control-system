@@ -10,7 +10,7 @@ import threading
 import logging
 from typing import Dict, Optional, Tuple
 
-from xy_hardware import XYStepperHardware
+from hardware.xy_hardware import XYStepperHardware
 
 
 class XYController:

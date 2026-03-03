@@ -116,7 +116,7 @@ nano config.local.yaml
 ### 2. Test the System
 ```bash
 # Run the test script to verify hardware
-python3 test_servo.py
+python3 tests/test_servo.py
 ```
 
 ### 3. Start the Main Application
@@ -130,6 +130,18 @@ python3 main.py --no-api
 # Use custom config file
 python3 main.py --config my_config.yaml
 ```
+
+**Two entry points:**
+
+- **`main.py`** – Production entry point. Runs the full system (servo + XY + optional API) with config-driven logging, local config merge (`config.local.yaml`), and network discovery. Use this for deployment and for the systemd service. Options: `--no-api`, `--config`, `--test-mode`.
+- **`start_servo_system.py`** – Flexible startup for development and testing. Choose what to run via `--mode`:
+  - `hardware` – Servo + XY only (no API or web)
+  - `api` – Servo + XY + HTTP API (port 5000)
+  - `web` – Servo + XY + web UI (port 8080)
+  - `xy` – XY positioning only
+  - `full` – API + web interface (default)
+
+  Example: `python3 start_servo_system.py --mode api --config config.yaml`
 
 ### 4. HTTP API Endpoints
 
@@ -215,7 +227,8 @@ The system consists of several modular components:
 - **`servo_hardware.py`**: Low-level hardware interface for PCA9685 and servos
 - **`servo_controller.py`**: High-level controller for sequences and scheduling
 - **`api_server.py`**: HTTP API server for remote control
-- **`main.py`**: Main application entry point and system coordinator
+- **`main.py`**: Production entry point (servo + XY + optional API; config-driven logging and network discovery)
+- **`start_servo_system.py`**: Optional startup script with `--mode` (hardware / api / web / xy / full) for development and testing
 
 ## Safety Features
 
@@ -272,7 +285,7 @@ The modular design makes it easy to extend:
 ### Testing
 ```bash
 # Run hardware tests
-python3 test_servo.py
+python3 tests/test_servo.py
 
 # Run specific tests
 python3 -m pytest tests/  # If using pytest

@@ -279,7 +279,7 @@ curl -H "X-API-Key: your-key" http://raspberrypi.local:5000/api/health
 
 1. **Check logs**: `tail -f logs/servo_control.log`
 2. **Verify config**: `python3 -c "import yaml; print(yaml.safe_load(open('config.local.yaml')))"`
-3. **Test hardware**: `python3 test_servo.py`
+3. **Test hardware**: `python3 tests/test_servo.py`
 4. **Check status**: `sudo systemctl status servo-control`
 
 ---

@@ -13,9 +13,9 @@ from flask_cors import CORS
 import threading
 import time
 
-from servo_controller import ServoController
-from xy_controller import XYController
-from usb_power_switch import USBPowerSwitchManager
+from controllers.servo_controller import ServoController
+from controllers.xy_controller import XYController
+from hardware.usb_power_switch import USBPowerSwitchManager
 
 
 class ServoAPIServer:
@@ -130,6 +130,15 @@ class ServoAPIServer:
             return f(*args, **kwargs)
         return decorated
     
+    def _usb_switch_id_from_index(self, id: int) -> Optional[str]:
+        """Resolve 1-based numeric id to config switch id (e.g. 'usb1'). Returns None if out of range."""
+        if not self.usb_power:
+            return None
+        switches = self.usb_power.list_switches()
+        if id < 1 or id > len(switches):
+            return None
+        return switches[id - 1]['id']
+
     def _register_routes(self):
         """Register all API endpoints."""
         
@@ -717,41 +726,52 @@ class ServoAPIServer:
                 }), 500
 
         # USB Power Switch endpoints (optional)
+        # Numeric id in path is 1-based index into the ordered list of switches (e.g. /api/usb-power/1/on).
         @self.app.route('/api/usb-power', methods=['GET'])
         @self.require_api_key
         def list_usb_switches():
             try:
                 if not self.usb_power:
                     return jsonify({'success': True, 'data': {'switches': []}})
-                return jsonify({'success': True, 'data': {'switches': self.usb_power.list_switches()}})
+                switches = self.usb_power.list_switches()
+                # Add 1-based index so clients can use /api/usb-power/<index>/on
+                for i, s in enumerate(switches, 1):
+                    s['index'] = i
+                return jsonify({'success': True, 'data': {'switches': switches}})
             except Exception as e:
                 self.logger.error(f"List USB switches failed: {e}")
                 return jsonify({'success': False, 'error': str(e)}), 500
 
-        @self.app.route('/api/usb-power/<switch_id>/on', methods=['POST'])
+        @self.app.route('/api/usb-power/<int:id>/on', methods=['POST'])
         @self.require_api_key
-        def usb_power_on(switch_id):
+        def usb_power_on(id):
             try:
                 if not self.usb_power:
                     return jsonify({'success': False, 'error': 'USB power not configured'}), 400
+                switch_id = self._usb_switch_id_from_index(id)
+                if switch_id is None:
+                    return jsonify({'success': False, 'error': f'Unknown switch id: {id}'}), 404
                 ok = self.usb_power.set_state(switch_id, True)
                 if not ok:
-                    return jsonify({'success': False, 'error': f'Unknown switch id: {switch_id}'}), 404
-                return jsonify({'success': True, 'data': {'id': switch_id, 'enabled': True}})
+                    return jsonify({'success': False, 'error': f'Unknown switch id: {id}'}), 404
+                return jsonify({'success': True, 'data': {'id': id, 'switch_id': switch_id, 'enabled': True}})
             except Exception as e:
                 self.logger.error(f"USB power on failed: {e}")
                 return jsonify({'success': False, 'error': str(e)}), 500
 
-        @self.app.route('/api/usb-power/<switch_id>/off', methods=['POST'])
+        @self.app.route('/api/usb-power/<int:id>/off', methods=['POST'])
         @self.require_api_key
-        def usb_power_off(switch_id):
+        def usb_power_off(id):
             try:
                 if not self.usb_power:
                     return jsonify({'success': False, 'error': 'USB power not configured'}), 400
+                switch_id = self._usb_switch_id_from_index(id)
+                if switch_id is None:
+                    return jsonify({'success': False, 'error': f'Unknown switch id: {id}'}), 404
                 ok = self.usb_power.set_state(switch_id, False)
                 if not ok:
-                    return jsonify({'success': False, 'error': f'Unknown switch id: {switch_id}'}), 404
-                return jsonify({'success': True, 'data': {'id': switch_id, 'enabled': False}})
+                    return jsonify({'success': False, 'error': f'Unknown switch id: {id}'}), 404
+                return jsonify({'success': True, 'data': {'id': id, 'switch_id': switch_id, 'enabled': False}})
             except Exception as e:
                 self.logger.error(f"USB power off failed: {e}")
                 return jsonify({'success': False, 'error': str(e)}), 500

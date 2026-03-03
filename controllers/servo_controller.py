@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 import schedule
 
-from servo_hardware import ServoHardware
+from hardware.servo_hardware import ServoHardware
 
 
 @dataclass
@@ -443,4 +443,3 @@ class ServoController:
             
         except Exception as e:
             self.logger.error(f"Controller cleanup failed: {e}")
-

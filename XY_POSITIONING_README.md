@@ -253,7 +253,7 @@ The system supports a configurable button grid for easy positioning:
 Run the comprehensive test script:
 
 ```bash
-python test_xy_system.py
+python tests/test_xy_system.py
 ```
 
 This will test:

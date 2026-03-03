@@ -287,4 +287,3 @@ class ServoHardware:
             'pulse_range': self.pulse_range,
             'angle_range': self.angle_range
         }
-

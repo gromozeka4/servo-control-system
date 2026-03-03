@@ -14,10 +14,10 @@ from pathlib import Path
 # Add current directory to Python path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from servo_controller import ServoController
-from xy_controller import XYController
-from api_server import ServoAPIServer
-from web_interface import WebInterface
+from controllers.servo_controller import ServoController
+from controllers.xy_controller import XYController
+from server.api_server import ServoAPIServer
+from server.web_interface import WebInterface
 
 
 def setup_logging():

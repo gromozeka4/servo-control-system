@@ -112,7 +112,7 @@ echo "   sudo reboot"
 echo
 echo "2. After reboot, test the system:"
 echo "   source servo_env/bin/activate"
-echo "   python3 test_servo.py"
+echo "   python3 tests/test_servo.py"
 echo
 echo "3. Start the main application:"
 echo "   source servo_env/bin/activate"

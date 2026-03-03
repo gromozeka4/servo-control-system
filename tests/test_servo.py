@@ -11,11 +11,11 @@ import yaml
 from pathlib import Path
 import os
 
-# Add current directory to Python path for imports
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Add repo root to Python path for imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from servo_hardware import ServoHardware
-from servo_controller import ServoController
+from hardware.servo_hardware import ServoHardware
+from controllers.servo_controller import ServoController
 
 
 def test_hardware_initialization():
